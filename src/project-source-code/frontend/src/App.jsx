@@ -1,162 +1,239 @@
 import { useState } from "react";
 import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
   BarChart,
   Bar,
+  CartesianGrid,
   XAxis,
   YAxis,
-  CartesianGrid,
   Tooltip,
-  ResponsiveContainer,
-  LineChart,
-  Line,
 } from "recharts";
 
-import "./App.css";
-
-/* =====================================================
-   DEMO DATA
-===================================================== */
+/* =========================================================
+   DATA
+========================================================= */
 
 const districtData = [
-  { name: "Pune", hospitals: 82 },
-  { name: "Nashik", hospitals: 68 },
-  { name: "Nagpur", hospitals: 75 },
-  { name: "Satara", hospitals: 42 },
-  { name: "Solapur", hospitals: 35 },
-  { name: "Kolhapur", hospitals: 71 },
+  { district: "Pune", value: 82 },
+  { district: "Nashik", value: 68 },
+  { district: "Nagpur", value: 75 },
+  { district: "Satara", value: 42 },
+  { district: "Solapur", value: 35 },
+  { district: "Kolhapur", value: 71 },
 ];
 
 const healthTrend = [
-  { name: "Jan", value: 52 },
-  { name: "Feb", value: 58 },
-  { name: "Mar", value: 55 },
-  { name: "Apr", value: 64 },
-  { name: "May", value: 69 },
-  { name: "Jun", value: 73 },
+  { month: "Jan", value: 52 },
+  { month: "Feb", value: 58 },
+  { month: "Mar", value: 55 },
+  { month: "Apr", value: 64 },
+  { month: "May", value: 69 },
+  { month: "Jun", value: 73 },
 ];
 
-const quickQuestions = [
-  "Which districts show unusual healthcare patterns?",
-  "Which districts have the lowest healthcare availability?",
-  "What are the major anomalies in this dataset?",
-  "Show me the most important trends.",
-];
+/* =========================================================
+   ICON COMPONENT
+========================================================= */
 
-/* =====================================================
-   DATASENSE AI LOGO
-===================================================== */
+function Icon({ name, size = 20, strokeWidth = 1.8 }) {
+  const common = {
+    width: size,
+    height: size,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth,
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+  };
 
-function DataSenseLogo({ small = false }) {
+  const icons = {
+    upload: (
+      <svg {...common}>
+        <path d="M12 16V4" />
+        <path d="m7 9 5-5 5 5" />
+        <path d="M5 20h14" />
+      </svg>
+    ),
+
+    file: (
+      <svg {...common}>
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" />
+        <path d="M14 2v6h6" />
+        <path d="M8 13h8" />
+        <path d="M8 17h6" />
+      </svg>
+    ),
+
+    sparkles: (
+      <svg {...common}>
+        <path d="m12 3-1.4 4.2L6.5 9l4.1 1.8L12 15l1.4-4.2L17.5 9l-4.1-1.8Z" />
+        <path d="m19 14-.7 2.3L16 17l2.3.7L19 20l.7-2.3L22 17l-2.3-.7Z" />
+        <path d="m5 3-.5 1.5L3 5l1.5.5L5 7l.5-1.5L7 5l-1.5-.5Z" />
+      </svg>
+    ),
+
+    chart: (
+      <svg {...common}>
+        <path d="M4 19V5" />
+        <path d="M4 19h16" />
+        <path d="m7 15 3-4 3 2 5-7" />
+      </svg>
+    ),
+
+    database: (
+      <svg {...common}>
+        <ellipse cx="12" cy="5" rx="8" ry="3" />
+        <path d="M4 5v7c0 1.7 3.6 3 8 3s8-1.3 8-3V5" />
+        <path d="M4 12v7c0 1.7 3.6 3 8 3s8-1.3 8-3v-7" />
+      </svg>
+    ),
+
+    search: (
+      <svg {...common}>
+        <circle cx="11" cy="11" r="7" />
+        <path d="m20 20-4-4" />
+      </svg>
+    ),
+
+    check: (
+      <svg {...common}>
+        <path d="m5 12 4 4L19 6" />
+      </svg>
+    ),
+
+    alert: (
+      <svg {...common}>
+        <path d="M10.3 3.9 2.2 18a2 2 0 0 0 1.7 3h16.2a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" />
+        <path d="M12 9v4" />
+        <path d="M12 17h.01" />
+      </svg>
+    ),
+
+    arrow: (
+      <svg {...common}>
+        <path d="M5 12h14" />
+        <path d="m13 6 6 6-6 6" />
+      </svg>
+    ),
+
+    brain: (
+      <svg {...common}>
+        <path d="M9.5 4a3 3 0 0 0-5.5 2c0 .5.1 1 .4 1.4A3.5 3.5 0 0 0 5 14.2V15a3 3 0 0 0 4.5 2.6V20" />
+        <path d="M14.5 4a3 3 0 0 1 5.5 2c0 .5-.1 1-.4 1.4a3.5 3.5 0 0 1-.6 6.8V15a3 3 0 0 1-4.5 2.6V20" />
+        <path d="M9 7h1" />
+        <path d="M14 7h1" />
+        <path d="M9 12h1" />
+        <path d="M14 12h1" />
+        <path d="M12 4v15" />
+      </svg>
+    ),
+  };
+
+  return icons[name] || null;
+}
+
+/* =========================================================
+   CUSTOM DATASENSE AI LOGO
+========================================================= */
+
+function DataSenseLogo({ size = 54 }) {
   return (
-    <div className={`datasense-logo ${small ? "logo-small" : ""}`}>
+    <div
+      className="datasense-logo"
+      style={{ width: size, height: size }}
+      aria-label="DataSense AI"
+    >
       <svg
-        viewBox="0 0 300 300"
-        xmlns="http://www.w3.org/2000/svg"
-        aria-label="DataSense AI Logo"
+        width="100%"
+        height="100%"
+        viewBox="0 0 100 100"
+        fill="none"
       >
         <defs>
-          <linearGradient
-            id="logoGradient"
-            x1="0%"
-            y1="100%"
-            x2="100%"
-            y2="0%"
-          >
-            <stop offset="0%" stopColor="#30246b" />
-            <stop offset="45%" stopColor="#5b3cc4" />
-            <stop offset="75%" stopColor="#168cc4" />
-            <stop offset="100%" stopColor="#20c6cf" />
+          <linearGradient id="logoGradient" x1="15" y1="15" x2="85" y2="85">
+            <stop offset="0%" stopColor="#7C3AED" />
+            <stop offset="48%" stopColor="#4F46E5" />
+            <stop offset="100%" stopColor="#06B6D4" />
+          </linearGradient>
+
+          <linearGradient id="networkGradient" x1="40" y1="70" x2="82" y2="18">
+            <stop offset="0%" stopColor="#06B6D4" />
+            <stop offset="100%" stopColor="#A78BFA" />
           </linearGradient>
 
           <radialGradient id="logoGlow">
-            <stop offset="0%" stopColor="#ffffff" />
-            <stop offset="30%" stopColor="#b8ffff" />
-            <stop offset="100%" stopColor="#42dde6" stopOpacity="0" />
+            <stop offset="0%" stopColor="#FFFFFF" stopOpacity="1" />
+            <stop offset="40%" stopColor="#67E8F9" stopOpacity=".9" />
+            <stop offset="100%" stopColor="#7C3AED" stopOpacity="0" />
           </radialGradient>
         </defs>
 
-        {/* Outer logo */}
         <circle
-          cx="150"
-          cy="150"
-          r="124"
-          fill="url(#logoGradient)"
-        />
-
-        {/* Inner circle */}
-        <circle
-          cx="150"
-          cy="150"
-          r="98"
-          fill="none"
-          stroke="white"
-          strokeWidth="10"
-        />
-
-        {/* Small data node */}
-        <circle
-          cx="78"
-          cy="105"
-          r="15"
-          fill="white"
-        />
-
-        {/* AI network */}
-        <g
-          fill="none"
-          stroke="#61d8e8"
+          cx="50"
+          cy="50"
+          r="45"
+          fill="#11152A"
+          stroke="url(#logoGradient)"
           strokeWidth="3"
-        >
-          <path d="M135 130 L155 105 L178 116 L198 92 L220 105" />
-          <path d="M155 105 L165 82 L188 72 L205 58" />
-          <path d="M178 116 L188 138 L210 125 L225 110" />
-          <path d="M198 92 L214 78 L230 76" />
-        </g>
-
-        {/* Network nodes */}
-        <g fill="#e4ffff">
-          <circle cx="135" cy="130" r="5" />
-          <circle cx="155" cy="105" r="5" />
-          <circle cx="178" cy="116" r="5" />
-          <circle cx="198" cy="92" r="5" />
-          <circle cx="220" cy="105" r="5" />
-          <circle cx="165" cy="82" r="5" />
-          <circle cx="188" cy="72" r="5" />
-          <circle cx="205" cy="58" r="5" />
-          <circle cx="188" cy="138" r="5" />
-          <circle cx="210" cy="125" r="5" />
-          <circle cx="225" cy="110" r="5" />
-        </g>
-
-        {/* Data table */}
-        <g
-          fill="none"
-          stroke="white"
-          strokeWidth="7"
-        >
-          <path d="M48 168 H230" />
-          <path d="M48 190 H230" />
-          <path d="M48 212 H230" />
-          <path d="M48 234 H220" />
-
-          <path d="M82 168 V248" />
-          <path d="M117 168 V248" />
-          <path d="M152 168 V248" />
-          <path d="M187 168 V244" />
-        </g>
-
-        {/* AI light */}
-        <circle
-          cx="145"
-          cy="155"
-          r="42"
-          fill="url(#logoGlow)"
         />
 
         <circle
-          cx="145"
-          cy="155"
-          r="6"
+          cx="50"
+          cy="50"
+          r="31"
+          fill="url(#logoGradient)"
+          opacity=".16"
+        />
+
+        <path
+          d="M22 55C26 72 39 82 55 81C69 80 79 71 83 58"
+          stroke="#FFFFFF"
+          strokeOpacity=".7"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+
+        <path
+          d="M25 43C30 28 43 20 58 20C70 20 80 27 84 37"
+          stroke="#8B5CF6"
+          strokeOpacity=".65"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+
+        <path
+          d="M30 61L42 52L53 57L63 42L75 48"
+          stroke="url(#networkGradient)"
+          strokeWidth="2.4"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+
+        <circle cx="30" cy="61" r="3.5" fill="#22D3EE" />
+        <circle cx="42" cy="52" r="3.5" fill="#67E8F9" />
+        <circle cx="53" cy="57" r="3.5" fill="#A78BFA" />
+        <circle cx="63" cy="42" r="3.5" fill="#C4B5FD" />
+        <circle cx="75" cy="48" r="3.5" fill="#22D3EE" />
+
+        <path
+          d="M61 39L67 29L73 34L80 22"
+          stroke="#67E8F9"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+
+        <circle cx="61" cy="39" r="2.5" fill="#FFFFFF" />
+        <circle cx="67" cy="29" r="2.5" fill="#22D3EE" />
+        <circle cx="73" cy="34" r="2.5" fill="#A78BFA" />
+        <circle cx="80" cy="22" r="3" fill="#67E8F9" />
+
+        <circle cx="49" cy="49" r="12" fill="url(#logoGlow)" opacity=".9" />
+
+        <path
+          d="M49 42L51 48L57 50L51 52L49 58L47 52L41 50L47 48Z"
           fill="white"
         />
       </svg>
@@ -164,38 +241,41 @@ function DataSenseLogo({ small = false }) {
   );
 }
 
-/* =====================================================
-   MAIN APP
-===================================================== */
+/* =========================================================
+   APP
+========================================================= */
 
 function App() {
   const [file, setFile] = useState(null);
-
   const [question, setQuestion] = useState(
     "Which districts show unusual healthcare patterns?"
   );
-
   const [loading, setLoading] = useState(false);
-
   const [analyzed, setAnalyzed] = useState(false);
-
   const [dragActive, setDragActive] = useState(false);
 
-  /* ===================================================
-     FILE VALIDATION
-  =================================================== */
+  const quickQuestions = [
+    "Which districts show unusual healthcare patterns?",
+    "Which districts have the lowest healthcare availability?",
+    "What are the major anomalies in this dataset?",
+    "Show me the most important trends.",
+  ];
+
+  /* =======================================================
+     FILE HANDLING
+  ======================================================= */
 
   const processFile = (selectedFile) => {
     if (!selectedFile) return;
 
+    const validExtensions = [".csv", ".xls", ".xlsx"];
     const fileName = selectedFile.name.toLowerCase();
 
-    const isCsv = fileName.endsWith(".csv");
-    const isExcel =
-      fileName.endsWith(".xlsx") ||
-      fileName.endsWith(".xls");
+    const valid = validExtensions.some((extension) =>
+      fileName.endsWith(extension)
+    );
 
-    if (!isCsv && !isExcel) {
+    if (!valid) {
       alert("Please upload a CSV or Excel file.");
       return;
     }
@@ -204,36 +284,26 @@ function App() {
     setAnalyzed(false);
   };
 
-  /* ===================================================
-     NORMAL FILE UPLOAD
-  =================================================== */
-
   const handleFileChange = (event) => {
-    const selectedFile = event.target.files[0];
-
+    const selectedFile = event.target.files?.[0];
     processFile(selectedFile);
   };
 
-  /* ===================================================
-     DRAG & DROP
-  =================================================== */
-
   const handleDrop = (event) => {
     event.preventDefault();
+    event.stopPropagation();
 
     setDragActive(false);
 
-    const droppedFile =
-      event.dataTransfer.files[0];
-
+    const droppedFile = event.dataTransfer.files?.[0];
     processFile(droppedFile);
   };
 
-  /* ===================================================
+  /* =======================================================
      ANALYZE DATASET
-  =================================================== */
+  ======================================================= */
 
-  const analyzeDataset = async () => {
+  const analyzeDataset = () => {
     if (!file) {
       alert("Please upload a dataset first.");
       return;
@@ -241,1008 +311,847 @@ function App() {
 
     setLoading(true);
 
-    /*
-      Later connect this section to your Python backend.
-
-      Example:
-
-      const formData = new FormData();
-
-      formData.append("file", file);
-      formData.append("question", question);
-
-      const response = await fetch(
-        "http://localhost:8000/analyze",
-        {
-          method: "POST",
-          body: formData
-        }
-      );
-
-      const result = await response.json();
-    */
-
     setTimeout(() => {
       setLoading(false);
       setAnalyzed(true);
+
+      setTimeout(() => {
+        document
+          .getElementById("results")
+          ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 100);
     }, 1500);
   };
 
-  /* ===================================================
-     RESET
-  =================================================== */
+  /* =======================================================
+     HELPERS
+  ======================================================= */
 
-  const resetAnalysis = () => {
-    setFile(null);
-    setAnalyzed(false);
+  const formatFileSize = (bytes) => {
+    if (!bytes) return "0 KB";
 
-    setQuestion(
-      "Which districts show unusual healthcare patterns?"
-    );
+    const kb = bytes / 1024;
+
+    if (kb < 1024) {
+      return `${kb.toFixed(1)} KB`;
+    }
+
+    return `${(kb / 1024).toFixed(1)} MB`;
   };
 
   return (
     <div className="app">
-
-      {/* =================================================
+      {/* ===================================================
           NAVBAR
-      ================================================= */}
+      =================================================== */}
 
-      <header className="navbar">
+      <nav className="navbar">
+        <div className="nav-inner">
+          <div className="brand">
+            <div className="brand-logo">
+              <DataSenseLogo size={48} />
+            </div>
 
-        <div className="brand">
-
-          <DataSenseLogo />
-
-          <div className="brand-text">
-            <h2>
-              DataSense <span>AI</span>
-            </h2>
-
-            <p>
-              Autonomous Data Analyst
-            </p>
+            <div className="brand-text">
+              <strong>DataSense</strong>
+              <span>AI ANALYST</span>
+            </div>
           </div>
 
+          <div className="nav-right">
+            <div className="ai-status">
+              <span className="status-dot"></span>
+              AI Online
+            </div>
+
+            <button className="nav-button">
+              <Icon name="brain" size={17} />
+              Autonomous Analysis
+            </button>
+          </div>
         </div>
+      </nav>
 
-        <div className="status">
-          <span className="status-dot"></span>
-          AI Agent Online
-        </div>
-
-      </header>
-
-
-      {/* =================================================
+      {/* ===================================================
           HERO
-      ================================================= */}
+      =================================================== */}
 
       <section className="hero">
-
-        {/* Animated background grid */}
         <div className="hero-grid"></div>
 
-        {/* Floating particles */}
-        <div className="particles">
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
+        <div className="hero-glow hero-glow-one"></div>
+        <div className="hero-glow hero-glow-two"></div>
 
-        <div className="hero-orb orb-one"></div>
-        <div className="hero-orb orb-two"></div>
+        <div className="hero-particle particle-one"></div>
+        <div className="hero-particle particle-two"></div>
+        <div className="hero-particle particle-three"></div>
+        <div className="hero-particle particle-four"></div>
 
         <div className="hero-content">
+          <div className="hero-badge">
+            <span className="badge-icon">
+              <Icon name="sparkles" size={15} />
+            </span>
 
-          {/* Left side */}
-          <div className="hero-copy">
+            <span>AI-POWERED DATA INTELLIGENCE</span>
 
-            <div className="hero-tag">
-              <span className="pulse-dot"></span>
-              ✨ AI + DATA SCIENCE
-            </div>
+            <span className="badge-live">LIVE</span>
+          </div>
 
-            <h1>
-              Analyze your data
+          <h1>
+            Analyze your data
+            <br />
+            <span>automatically.</span>
+          </h1>
+
+          <p>
+            Upload your dataset and let an autonomous AI analyst
+            <br className="desktop-break" />
+            inspect, clean, analyze and explain your data.
+          </p>
+
+          <div className="hero-actions">
+            <a href="#workspace" className="hero-primary">
+              <Icon name="upload" size={18} />
+              Start analyzing
+              <Icon name="arrow" size={17} />
+            </a>
+
+            <div className="hero-trust">
               <span>
-                automatically.
+                <Icon name="check" size={14} />
+                CSV & Excel
               </span>
-            </h1>
 
-            <p>
-              Upload a CSV or Excel dataset and let
-              the autonomous data analyst inspect,
-              clean, analyze and explain your data.
-            </p>
+              <span>
+                <Icon name="check" size={14} />
+                AI insights
+              </span>
 
-            <div className="hero-features">
-
-              <div>
-                <span>✓</span>
-                Automatic analysis
-              </div>
-
-              <div>
-                <span>✓</span>
-                Anomaly detection
-              </div>
-
-              <div>
-                <span>✓</span>
-                AI explanations
-              </div>
-
+              <span>
+                <Icon name="check" size={14} />
+                Instant analysis
+              </span>
             </div>
-
           </div>
-
-
-          {/* Right side analytics visualization */}
-          <div className="hero-visual">
-
-            <div className="orbit orbit-one"></div>
-            <div className="orbit orbit-two"></div>
-
-            <div className="analytics-panel">
-
-              <div className="analytics-header">
-
-                <div>
-                  <small>LIVE ANALYSIS</small>
-                  <h3>Data Intelligence</h3>
-                </div>
-
-                <div className="live-status">
-                  <span></span>
-                  LIVE
-                </div>
-
-              </div>
-
-              <div className="mini-chart">
-
-                <div className="chart-grid"></div>
-
-                <div className="bars">
-
-                  <span style={{ height: "35%" }}></span>
-                  <span style={{ height: "52%" }}></span>
-                  <span style={{ height: "42%" }}></span>
-                  <span
-                    className="active"
-                    style={{ height: "78%" }}
-                  ></span>
-                  <span style={{ height: "62%" }}></span>
-                  <span style={{ height: "88%" }}></span>
-                  <span style={{ height: "70%" }}></span>
-
-                </div>
-
-                <svg
-                  className="trend"
-                  viewBox="0 0 400 180"
-                  preserveAspectRatio="none"
-                >
-                  <path
-                    d="M0 145 C50 125, 75 145, 110 105 C145 65, 165 110, 200 90 C240 70, 250 100, 285 60 C320 25, 345 65, 400 25"
-                    fill="none"
-                    stroke="#67e8f9"
-                    strokeWidth="4"
-                  />
-
-                  <circle
-                    cx="400"
-                    cy="25"
-                    r="6"
-                    fill="#ffffff"
-                  />
-                </svg>
-
-              </div>
-
-              <div className="analytics-footer">
-
-                <div>
-                  <span className="tiny-dot"></span>
-                  Patterns detected
-                </div>
-
-                <strong>+24.8%</strong>
-
-              </div>
-
-            </div>
-
-
-            {/* Floating cards */}
-
-            <div className="floating-data-card card-top">
-
-              <div className="floating-icon">
-                📊
-              </div>
-
-              <div>
-                <strong>650</strong>
-                <small>Rows analyzed</small>
-              </div>
-
-            </div>
-
-
-            <div className="floating-data-card card-right">
-
-              <div className="floating-icon">
-                ⚡
-              </div>
-
-              <div>
-                <strong>7</strong>
-                <small>Anomalies found</small>
-              </div>
-
-            </div>
-
-
-            <div className="floating-data-card card-bottom">
-
-              <div className="floating-icon">
-                🧠
-              </div>
-
-              <div>
-                <strong>AI Insight</strong>
-                <small>Pattern detected</small>
-              </div>
-
-            </div>
-
-          </div>
-
         </div>
 
-      </section>
+        {/* Floating analytics visual */}
 
-
-      {/* =================================================
-          MAIN
-      ================================================= */}
-
-      <main className="container">
-
-
-        {/* =================================================
-            UPLOAD
-        ================================================= */}
-
-        <section className="card upload-card">
-
-          <div className="section-title">
-
-            <div className="number">
-              01
+        <div className="hero-dashboard">
+          <div className="floating-card floating-card-top">
+            <div className="mini-icon">
+              <Icon name="chart" size={17} />
             </div>
 
             <div>
-              <h2>Upload Dataset</h2>
-
-              <p>
-                CSV and Excel files are supported.
-              </p>
+              <small>Data Quality</small>
+              <strong>94.8%</strong>
             </div>
 
+            <span className="mini-up">+12%</span>
           </div>
 
+          <div className="hero-data-orb">
+            <div className="orb-ring ring-one"></div>
+            <div className="orb-ring ring-two"></div>
+            <div className="orb-ring ring-three"></div>
+
+            <div className="orb-core">
+              <DataSenseLogo size={82} />
+            </div>
+
+            <span className="orb-node node-one"></span>
+            <span className="orb-node node-two"></span>
+            <span className="orb-node node-three"></span>
+            <span className="orb-node node-four"></span>
+          </div>
+
+          <div className="floating-card floating-card-bottom">
+            <div className="mini-bars">
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+
+            <div>
+              <small>AI Insights</small>
+              <strong>24 detected</strong>
+            </div>
+          </div>
+        </div>
+
+        <div className="scroll-indicator">
+          <span></span>
+          <small>Scroll to analyze</small>
+        </div>
+      </section>
+
+      {/* ===================================================
+          WORKSPACE
+      =================================================== */}
+
+      <main className="workspace" id="workspace">
+        {/* =================================================
+            STEP 01
+        ================================================= */}
+
+        <section className="workspace-card upload-card">
+          <div className="section-heading">
+            <div className="step-number">
+              <span>01</span>
+            </div>
+
+            <div>
+              <div className="section-title-row">
+                <h2>Upload your dataset</h2>
+
+                <span className="heading-pill">
+                  <Icon name="database" size={13} />
+                  Secure processing
+                </span>
+              </div>
+
+              <p>
+                CSV and Excel files are supported. Drop your data and let AI
+                handle the rest.
+              </p>
+            </div>
+          </div>
 
           <label
-            className={`upload-area ${
-              dragActive ? "drag-active" : ""
+            className={`upload-area ${dragActive ? "drag-active" : ""} ${
+              file ? "has-file" : ""
             }`}
-
+            onDragEnter={(event) => {
+              event.preventDefault();
+              setDragActive(true);
+            }}
             onDragOver={(event) => {
               event.preventDefault();
               setDragActive(true);
             }}
-
-            onDragLeave={() => {
+            onDragLeave={(event) => {
+              event.preventDefault();
               setDragActive(false);
             }}
-
             onDrop={handleDrop}
           >
-
             <input
               type="file"
-              accept=".csv,.xlsx,.xls"
+              accept=".csv,.xls,.xlsx"
               onChange={handleFileChange}
             />
 
-            <div className="upload-icon">
+            {!file ? (
+              <>
+                <div className="upload-icon-wrap">
+                  <div className="upload-icon-glow"></div>
 
-              {dragActive ? "⬇️" : "📁"}
+                  <div className="upload-icon">
+                    <Icon name="upload" size={29} />
+                  </div>
+                </div>
 
-            </div>
+                <h3>Drop your dataset here</h3>
 
-            <h3>
+                <p>
+                  or <span>browse files</span> from your computer
+                </p>
 
-              {dragActive
-                ? "Drop your dataset here"
-                : file
-                ? file.name
-                : "Choose your dataset"}
+                <div className="file-types">
+                  <span>CSV</span>
+                  <span>XLS</span>
+                  <span>XLSX</span>
+                  <em>Maximum 50 MB</em>
+                </div>
+              </>
+            ) : (
+              <div className="selected-file">
+                <div className="selected-file-icon">
+                  <Icon name="file" size={28} />
+                </div>
 
-            </h3>
+                <div className="selected-file-info">
+                  <strong>{file.name}</strong>
 
-            <p>
+                  <span>
+                    {formatFileSize(file.size)} • Ready for analysis
+                  </span>
+                </div>
 
-              {file
-                ? "Dataset ready for analysis"
-                : "Click to browse or drag & drop CSV / Excel"}
-
-            </p>
-
+                <div className="file-ready">
+                  <Icon name="check" size={17} />
+                </div>
+              </div>
+            )}
           </label>
 
-
           {file && (
-
-            <div className="file-info">
-
-              <div>
-
-                <strong>
-                  Dataset selected
-                </strong>
-
-                <span>
-                  {file.name}
-                </span>
-
+            <div className="file-action-row">
+              <div className="file-confirmation">
+                <span className="confirmation-dot"></span>
+                Dataset uploaded successfully
               </div>
 
               <button
-                className="remove-btn"
-                onClick={resetAnalysis}
+                className={`analyze-button ${loading ? "loading" : ""}`}
+                onClick={analyzeDataset}
+                disabled={loading}
               >
-                Remove
+                {loading ? (
+                  <>
+                    <span className="button-spinner"></span>
+                    Analyzing dataset...
+                  </>
+                ) : (
+                  <>
+                    <Icon name="sparkles" size={18} />
+                    Analyze with AI
+                    <Icon name="arrow" size={17} />
+                  </>
+                )}
               </button>
-
             </div>
-
           )}
-
         </section>
 
-
         {/* =================================================
-            QUESTION
+            STEP 02
         ================================================= */}
 
-        <section className="card">
-
-          <div className="section-title">
-
-            <div className="number">
-              02
+        <section className="workspace-card question-card">
+          <div className="section-heading">
+            <div className="step-number">
+              <span>02</span>
             </div>
 
             <div>
-              <h2>
-                Ask the Data Analyst
-              </h2>
+              <div className="section-title-row">
+                <h2>Ask the data analyst</h2>
+
+                <span className="heading-pill ai-pill">
+                  <span className="tiny-pulse"></span>
+                  AI ready
+                </span>
+              </div>
 
               <p>
-                Ask a natural-language question
-                about your dataset.
+                Ask a natural-language question about your dataset.
               </p>
             </div>
-
           </div>
 
-
-          {/* Quick questions */}
-
-          <div className="quick-questions">
-
-            <span>
-              QUICK QUESTIONS
-            </span>
-
-            <div className="question-chips">
-
-              {quickQuestions.map(
-                (item, index) => (
-
-                  <button
-                    key={index}
-                    type="button"
-                    onClick={() =>
-                      setQuestion(item)
-                    }
-                  >
-                    {item}
-                  </button>
-
-                )
-              )}
-
+          <div className="quick-section">
+            <div className="quick-label">
+              <span>QUICK QUESTIONS</span>
+              <small>Choose an insight to explore</small>
             </div>
 
+            <div className="quick-questions">
+              {quickQuestions.map((item, index) => (
+                <button
+                  key={index}
+                  className={`question-chip ${
+                    question === item ? "active" : ""
+                  }`}
+                  onClick={() => setQuestion(item)}
+                >
+                  <span className="chip-number">0{index + 1}</span>
+                  {item}
+                </button>
+              ))}
+            </div>
           </div>
 
+          <div className="question-box">
+            <div className="question-icon">
+              <Icon name="sparkles" size={19} />
+            </div>
 
-          <textarea
-            value={question}
-            onChange={(event) =>
-              setQuestion(event.target.value)
-            }
-            placeholder="Ask something about your dataset..."
-          />
+            <textarea
+              value={question}
+              onChange={(event) => setQuestion(event.target.value)}
+              placeholder="Ask anything about your dataset..."
+              rows="3"
+            />
 
+            <div className="question-footer">
+              <span>
+                <Icon name="brain" size={14} />
+                Natural language analysis
+              </span>
 
-          <button
-            className="analyze-btn"
-            onClick={analyzeDataset}
-            disabled={loading}
-          >
-
-            {loading ? (
-              <>
-                <span className="spinner"></span>
-                Analyzing dataset...
-              </>
-            ) : (
-              <>
-                🔍 Analyze Dataset
-              </>
-            )}
-
-          </button>
-
+              <span className="question-count">
+                {question.length}/500
+              </span>
+            </div>
+          </div>
         </section>
 
-
         {/* =================================================
-            RESULTS
+            STEP 03
         ================================================= */}
 
         {analyzed && (
-
-          <section className="results">
-
-
-            <div className="result-heading">
-
+          <section className="results-section" id="results">
+            <div className="results-header">
               <div>
-
-                <div className="result-tag">
+                <div className="results-kicker">
+                  <span></span>
                   ANALYSIS COMPLETE
                 </div>
 
-                <h2>
-                  Analysis Results
-                </h2>
+                <h2>Your data, explained.</h2>
 
                 <p>
-                  The autonomous agent inspected
-                  the dataset and identified
-                  important patterns.
+                  AI has inspected your dataset and identified the most
+                  important patterns and anomalies.
                 </p>
-
               </div>
 
-              <button className="report-btn">
-                📄 Download Report
-              </button>
-
+              <div className="analysis-complete">
+                <Icon name="check" size={17} />
+                Analysis complete
+              </div>
             </div>
 
-
-            {/* Statistics */}
+            {/* Stats */}
 
             <div className="stats-grid">
-
               <div className="stat-card">
-                <span>Rows</span>
-                <strong>650</strong>
+                <div className="stat-top">
+                  <span>Rows analyzed</span>
+
+                  <div className="stat-icon purple">
+                    <Icon name="database" size={18} />
+                  </div>
+                </div>
+
+                <strong>12,450</strong>
+
                 <small>
-                  Records analyzed
+                  <span className="positive">+8.2%</span> vs previous
                 </small>
               </div>
 
               <div className="stat-card">
-                <span>Columns</span>
-                <strong>12</strong>
-                <small>
-                  Features detected
-                </small>
-              </div>
+                <div className="stat-top">
+                  <span>Columns</span>
 
-              <div className="stat-card">
-                <span>Missing Values</span>
+                  <div className="stat-icon cyan">
+                    <Icon name="chart" size={18} />
+                  </div>
+                </div>
+
                 <strong>18</strong>
+
+                <small>All columns detected</small>
+              </div>
+
+              <div className="stat-card">
+                <div className="stat-top">
+                  <span>Data quality</span>
+
+                  <div className="stat-icon green">
+                    <Icon name="check" size={18} />
+                  </div>
+                </div>
+
+                <strong>94.8%</strong>
+
                 <small>
-                  Values cleaned
+                  <span className="positive">Excellent</span>
                 </small>
               </div>
 
-              <div className="stat-card anomaly">
-                <span>Anomalies</span>
-                <strong>7</strong>
-                <small>
-                  Unusual patterns
-                </small>
-              </div>
+              <div className="stat-card">
+                <div className="stat-top">
+                  <span>Anomalies</span>
 
+                  <div className="stat-icon orange">
+                    <Icon name="alert" size={18} />
+                  </div>
+                </div>
+
+                <strong>24</strong>
+
+                <small>Require attention</small>
+              </div>
             </div>
 
+            {/* Dataset understanding */}
 
-            {/* Dataset Understanding */}
-
-            <div className="card">
-
-              <div className="section-title">
-
-                <div className="number">
-                  03
-                </div>
-
-                <div>
-                  <h2>
-                    Dataset Understanding
-                  </h2>
-
-                  <p>
-                    Automatically detected
-                    structure and data quality.
-                  </p>
-                </div>
-
+            <div className="insight-card">
+              <div className="insight-icon">
+                <Icon name="sparkles" size={21} />
               </div>
 
+              <div className="insight-content">
+                <span className="insight-label">
+                  AI DATASET UNDERSTANDING
+                </span>
 
-              <div className="quality-grid">
+                <h3>Healthcare Availability Dataset</h3>
 
-                <div>
-                  <span>Dataset</span>
-                  <strong>
-                    {file?.name}
-                  </strong>
+                <p>
+                  This dataset contains district-level healthcare
+                  availability metrics. AI identified meaningful differences
+                  between districts, with several regions showing unusually
+                  low availability.
+                </p>
+
+                <div className="insight-tags">
+                  <span>Healthcare</span>
+                  <span>District analysis</span>
+                  <span>Availability</span>
+                  <span>Trend detection</span>
                 </div>
-
-                <div>
-                  <span>Data Type</span>
-                  <strong>
-                    Healthcare
-                  </strong>
-                </div>
-
-                <div>
-                  <span>Numeric Columns</span>
-                  <strong>9</strong>
-                </div>
-
-                <div>
-                  <span>Categorical Columns</span>
-                  <strong>3</strong>
-                </div>
-
               </div>
-
             </div>
-
 
             {/* Charts */}
 
             <div className="charts-grid">
-
-              <div className="card chart-card">
-
+              <div className="chart-card">
                 <div className="chart-header">
-
                   <div>
-                    <h3>
-                      Healthcare Availability
-                    </h3>
-
-                    <p>
-                      Hospital availability
-                      by district
-                    </p>
+                    <span className="chart-kicker">DISTRICT ANALYSIS</span>
+                    <h3>Healthcare availability</h3>
                   </div>
 
-                  <span>📊</span>
-
+                  <span className="chart-badge">
+                    <span></span>
+                    Current
+                  </span>
                 </div>
 
-
-                <ResponsiveContainer
-                  width="100%"
-                  height={300}
-                >
-
-                  <BarChart
-                    data={districtData}
-                  >
-
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      stroke="#e8eaf0"
-                    />
-
-                    <XAxis
-                      dataKey="name"
-                      tick={{ fill: "#667085" }}
-                    />
-
-                    <YAxis
-                      tick={{ fill: "#667085" }}
-                    />
-
-                    <Tooltip />
-
-                    <Bar
-                      dataKey="hospitals"
-                      fill="#6366f1"
-                      radius={[
-                        7,
-                        7,
-                        0,
-                        0,
-                      ]}
-                    />
-
-                  </BarChart>
-
-                </ResponsiveContainer>
-
-              </div>
-
-
-              <div className="card chart-card">
-
-                <div className="chart-header">
-
-                  <div>
-                    <h3>
-                      Healthcare Trend
-                    </h3>
-
-                    <p>
-                      Monthly health indicator
-                    </p>
-                  </div>
-
-                  <span>📈</span>
-
-                </div>
-
-
-                <ResponsiveContainer
-                  width="100%"
-                  height={300}
-                >
-
-                  <LineChart
-                    data={healthTrend}
-                  >
-
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      stroke="#e8eaf0"
-                    />
-
-                    <XAxis
-                      dataKey="name"
-                      tick={{ fill: "#667085" }}
-                    />
-
-                    <YAxis
-                      tick={{ fill: "#667085" }}
-                    />
-
-                    <Tooltip />
-
-                    <Line
-                      type="monotone"
-                      dataKey="value"
-                      stroke="#06b6d4"
-                      strokeWidth={4}
-                      dot={{
-                        r: 5,
-                        fill: "#06b6d4",
+                <div className="chart-container">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={districtData}
+                      margin={{
+                        top: 10,
+                        right: 5,
+                        left: -20,
+                        bottom: 0,
                       }}
-                    />
+                    >
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        vertical={false}
+                      />
 
-                  </LineChart>
+                      <XAxis
+                        dataKey="district"
+                        axisLine={false}
+                        tickLine={false}
+                      />
 
-                </ResponsiveContainer>
+                      <YAxis
+                        axisLine={false}
+                        tickLine={false}
+                        domain={[0, 100]}
+                      />
 
+                      <Tooltip
+                        cursor={{ opacity: 0.08 }}
+                        contentStyle={{
+                          borderRadius: "14px",
+                          border: "1px solid rgba(124,58,237,.15)",
+                          boxShadow: "0 10px 30px rgba(0,0,0,.12)",
+                        }}
+                      />
+
+                      <Bar
+                        dataKey="value"
+                        fill="#7c3aed"
+                        radius={[8, 8, 0, 0]}
+                        barSize={32}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
 
-            </div>
+              <div className="chart-card">
+                <div className="chart-header">
+                  <div>
+                    <span className="chart-kicker">TREND DETECTION</span>
+                    <h3>Healthcare trend</h3>
+                  </div>
 
+                  <span className="trend-value">+40.4%</span>
+                </div>
+
+                <div className="chart-container">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart
+                      data={healthTrend}
+                      margin={{
+                        top: 10,
+                        right: 5,
+                        left: -20,
+                        bottom: 0,
+                      }}
+                    >
+                      <defs>
+                        <linearGradient
+                          id="trendGradient"
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="1"
+                        >
+                          <stop
+                            offset="0%"
+                            stopColor="#06b6d4"
+                            stopOpacity={0.35}
+                          />
+                          <stop
+                            offset="100%"
+                            stopColor="#06b6d4"
+                            stopOpacity={0}
+                          />
+                        </linearGradient>
+                      </defs>
+
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        vertical={false}
+                      />
+
+                      <XAxis
+                        dataKey="month"
+                        axisLine={false}
+                        tickLine={false}
+                      />
+
+                      <YAxis
+                        axisLine={false}
+                        tickLine={false}
+                      />
+
+                      <Tooltip
+                        contentStyle={{
+                          borderRadius: "14px",
+                          border: "1px solid rgba(6,182,212,.15)",
+                          boxShadow: "0 10px 30px rgba(0,0,0,.12)",
+                        }}
+                      />
+
+                      <Area
+                        type="monotone"
+                        dataKey="value"
+                        stroke="#06b6d4"
+                        strokeWidth={3}
+                        fill="url(#trendGradient)"
+                        dot={{
+                          r: 4,
+                          fill: "#06b6d4",
+                        }}
+                        activeDot={{
+                          r: 6,
+                        }}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
 
             {/* Anomalies */}
 
-            <div className="card anomaly-section">
-
-              <div className="section-title">
-
-                <div className="number">
-                  04
-                </div>
-
-                <div>
-
-                  <h2>
-                    Unusual Patterns Detected
-                  </h2>
-
-                  <p>
-                    Potential anomalies
-                    identified by the agent.
-                  </p>
-
-                </div>
-
-              </div>
-
-
-              <div className="anomaly-list">
-
-                <div className="anomaly-item">
-
-                  <span className="warning">
-                    !
-                  </span>
-
+            <div className="lower-grid">
+              <div className="anomaly-card">
+                <div className="card-title-row">
                   <div>
-
-                    <strong>
-                      Solapur
-                    </strong>
-
-                    <p>
-                      Hospital availability
-                      is significantly lower
-                      than the dataset average.
-                    </p>
-
+                    <span className="chart-kicker">AI DETECTION</span>
+                    <h3>Important anomalies</h3>
                   </div>
 
-                  <span className="severity">
-                    High
-                  </span>
-
+                  <span className="count-badge">24 found</span>
                 </div>
 
+                <div className="anomaly-list">
+                  <div className="anomaly-item">
+                    <div className="anomaly-marker critical">
+                      <Icon name="alert" size={16} />
+                    </div>
 
-                <div className="anomaly-item">
+                    <div>
+                      <strong>Solapur availability is unusually low</strong>
+                      <p>
+                        Healthcare availability is significantly below the
+                        dataset average.
+                      </p>
+                    </div>
 
-                  <span className="warning">
-                    !
-                  </span>
-
-                  <div>
-
-                    <strong>
-                      Satara
-                    </strong>
-
-                    <p>
-                      Healthcare indicators
-                      show an unusual deviation
-                      from nearby districts.
-                    </p>
-
+                    <span className="severity high">HIGH</span>
                   </div>
 
-                  <span className="severity medium">
-                    Medium
-                  </span>
+                  <div className="anomaly-item">
+                    <div className="anomaly-marker warning">
+                      <Icon name="alert" size={16} />
+                    </div>
 
-                </div>
+                    <div>
+                      <strong>Satara shows a similar pattern</strong>
+                      <p>
+                        Values are lower than expected compared with nearby
+                        districts.
+                      </p>
+                    </div>
 
-
-                <div className="anomaly-item">
-
-                  <span className="warning">
-                    !
-                  </span>
-
-                  <div>
-
-                    <strong>
-                      District pattern
-                    </strong>
-
-                    <p>
-                      Multiple healthcare
-                      variables show correlated
-                      unusual values.
-                    </p>
-
+                    <span className="severity medium">MEDIUM</span>
                   </div>
 
-                  <span className="severity">
-                    High
-                  </span>
+                  <div className="anomaly-item">
+                    <div className="anomaly-marker normal">
+                      <Icon name="check" size={16} />
+                    </div>
 
+                    <div>
+                      <strong>Pune is performing above average</strong>
+                      <p>
+                        Availability levels are consistently stronger than
+                        the overall dataset.
+                      </p>
+                    </div>
+
+                    <span className="severity low">POSITIVE</span>
+                  </div>
                 </div>
-
               </div>
 
-            </div>
+              {/* AI Explanation */}
 
+              <div className="explanation-card">
+                <div className="explanation-glow"></div>
 
-            {/* AI Explanation */}
+                <div className="explanation-header">
+                  <div className="explanation-icon">
+                    <Icon name="sparkles" size={20} />
+                  </div>
 
-            <div className="card ai-summary">
-
-              <div className="ai-icon">
-                🧠
-              </div>
-
-              <div>
-
-                <div className="result-tag">
-                  AI EXPLANATION
+                  <div>
+                    <span>AI EXPLANATION</span>
+                    <h3>What should you know?</h3>
+                  </div>
                 </div>
-
-                <h2>
-                  What the agent found
-                </h2>
 
                 <p>
-                  Based on the analysis, several
-                  districts show healthcare patterns
-                  that differ significantly from the
-                  overall dataset. Solapur and Satara
-                  have comparatively lower healthcare
-                  availability. These districts should
-                  be investigated further because their
-                  values are outside the normal
-                  distribution observed across
-                  the dataset.
+                  The strongest pattern is the large variation in healthcare
+                  availability across districts. Pune and Nagpur perform
+                  relatively well, while Solapur and Satara require closer
+                  attention.
                 </p>
 
-              </div>
+                <div className="recommendation">
+                  <div className="recommendation-icon">
+                    <Icon name="arrow" size={17} />
+                  </div>
 
+                  <div>
+                    <strong>Recommended focus</strong>
+                    <span>
+                      Investigate resource distribution in low-performing
+                      districts.
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
 
+            {/* Pipeline */}
 
-            {/* Workflow */}
-
-            <div className="card">
-
-              <div className="section-title">
-
-                <div className="number">
-                  05
-                </div>
-
+            <div className="pipeline-card">
+              <div className="pipeline-header">
                 <div>
-
-                  <h2>
-                    Agent Workflow
-                  </h2>
-
-                  <p>
-                    How the autonomous analyst
-                    reached the result.
-                  </p>
-
+                  <span className="chart-kicker">AUTONOMOUS PIPELINE</span>
+                  <h3>How DataSense analyzed your data</h3>
                 </div>
 
+                <span className="pipeline-status">
+                  <span></span>
+                  Completed
+                </span>
               </div>
-
 
               <div className="pipeline">
+                <div className="pipeline-step completed">
+                  <div className="pipeline-number">
+                    <Icon name="check" size={15} />
+                  </div>
 
-                <div className="pipeline-item">
-                  <span>1</span>
-                  <strong>Inspect</strong>
-                  <small>
-                    Dataset structure
-                  </small>
+                  <strong>Ingest</strong>
+                  <span>Dataset loaded</span>
                 </div>
 
-                <div className="arrow">
-                  →
-                </div>
+                <div className="pipeline-line completed"></div>
 
-                <div className="pipeline-item">
-                  <span>2</span>
+                <div className="pipeline-step completed">
+                  <div className="pipeline-number">
+                    <Icon name="check" size={15} />
+                  </div>
+
                   <strong>Clean</strong>
-                  <small>
-                    Missing values
-                  </small>
+                  <span>Quality checked</span>
                 </div>
 
-                <div className="arrow">
-                  →
-                </div>
+                <div className="pipeline-line completed"></div>
 
-                <div className="pipeline-item">
-                  <span>3</span>
+                <div className="pipeline-step completed">
+                  <div className="pipeline-number">
+                    <Icon name="check" size={15} />
+                  </div>
+
                   <strong>Analyze</strong>
-                  <small>
-                    Statistics
-                  </small>
+                  <span>Patterns detected</span>
                 </div>
 
-                <div className="arrow">
-                  →
-                </div>
+                <div className="pipeline-line completed"></div>
 
-                <div className="pipeline-item">
-                  <span>4</span>
-                  <strong>Detect</strong>
-                  <small>
-                    Anomalies
-                  </small>
-                </div>
+                <div className="pipeline-step completed">
+                  <div className="pipeline-number">
+                    <Icon name="check" size={15} />
+                  </div>
 
-                <div className="arrow">
-                  →
-                </div>
-
-                <div className="pipeline-item">
-                  <span>5</span>
                   <strong>Explain</strong>
-                  <small>
-                    AI report
-                  </small>
+                  <span>Insights generated</span>
                 </div>
-
               </div>
-
             </div>
-
           </section>
-
         )}
-
       </main>
 
-
-      {/* =================================================
+      {/* ===================================================
           FOOTER
-      ================================================= */}
+      =================================================== */}
 
-      <footer>
+      <footer className="footer">
+        <div className="footer-inner">
+          <div className="footer-brand">
+            <DataSenseLogo size={38} />
 
-        <div className="footer-brand">
-
-          <DataSenseLogo small />
-
-          <div>
-            <strong>
-              DataSense AI
-            </strong>
-
-            <span>
-              Autonomous Data Analyst
-            </span>
+            <div>
+              <strong>DataSense</strong>
+              <span>Autonomous Data Intelligence</span>
+            </div>
           </div>
 
+          <p>
+            Turn raw data into clear, actionable insights.
+          </p>
+
+          <span className="footer-copy">
+            © 2026 DataSense AI
+          </span>
         </div>
-
-        <span>
-          PS05 • Autonomous Data Analyst Agent
-        </span>
-
       </footer>
-
     </div>
   );
 }
